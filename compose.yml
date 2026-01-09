@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  da-monitor:
+    build: .
+    image: da-monitor-bot:latest
+    container_name: da-monitor
+    restart: unless-stopped
+    # Removing env_file because it is not in the git repo. 
+    # Please set these variables in Portainer's "Environment variables" section.
+    environment:
+      - BOT_USERNAME=${BOT_USERNAME}
+      - BOT_PASSWORD=${BOT_PASSWORD}
+      - GREEN_API_INSTANCE_ID=${GREEN_API_INSTANCE_ID}
+      - GREEN_API_TOKEN=${GREEN_API_TOKEN}
+      - WHATSAPP_RECIPIENT=${WHATSAPP_RECIPIENT}
+      - CHECK_INTERVAL=${CHECK_INTERVAL:-60}
+    # Optional: Bot Zeitzone setzen
+    command: python bot.py
