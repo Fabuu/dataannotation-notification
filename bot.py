@@ -61,13 +61,18 @@ def run_bot():
                             if last_content is None:
                                 last_content = current_content
                                 print("Initialer Status gespeichert.")
+                                
+                                # Start-Nachricht senden
+                                if GREEN_API_INSTANCE_ID and GREEN_API_TOKEN and WHATSAPP_RECIPIENT:
+                                    send_whatsapp_message(f"🤖 Bot gestartet!\nIch überwache jetzt die Seite für dich.\n\nLink: {TARGET_URL}")
+
                             elif current_content != last_content:
                                 print("⚠️ ÄNDERUNG ERKANNT! ⚠️")
                                 print(f"Neu: {current_content}")
                                 
                                 # WhatsApp Nachricht via Green API
                                 if GREEN_API_INSTANCE_ID and GREEN_API_TOKEN and WHATSAPP_RECIPIENT:
-                                    send_whatsapp_message(f"🚨 DataAnnotation Änderung! 🚨\n\nNeuer Status:\n{current_content[:500]}")
+                                    send_whatsapp_message(f"🚨 DataAnnotation Änderung! 🚨\n\nLink: {TARGET_URL}\n\nNeuer Status:\n{current_content[:500]}")
                                 
                                 last_content = current_content
                             else:
