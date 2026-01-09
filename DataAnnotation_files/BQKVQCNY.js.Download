@@ -1,0 +1,17 @@
+import{i as o}from"./Dk3IVSSa.js";import{j as t}from"./DMsJTamk.js";import{i as n}from"./RAcvz2g_.js";import{c as i}from"./IY0vBkln.js";import"./CwIXR9xk.js";import"./CI5g4w8L.js";import"./LuOn9sHe.js";import"./D6-XlEtG.js";import"./ChBc-u9o.js";import"./Amg3JWER.js";import"./Cdg9bknm.js";import"./CErigITv.js";/**
+ * @license lucide-react v0.539.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */const a=[["circle",{cx:"12",cy:"12",r:"10",key:"1mglay"}],["path",{d:"M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3",key:"1u773s"}],["path",{d:"M12 17h.01",key:"p32p05"}]],l=i("circle-question-mark",a);function s({className:e}){const r=t.jsxs("div",{className:"tw-flex tw-flex-col tw-gap-1 tw-rounded-lg tw-bg-white tw-p-2 tw-shadow-lg",children:[t.jsx("a",{href:"/publish/g/Y0sVUUFfBGVrRTU5Cj0MDSoUPnMvOypfYncSCDV6MGoaAV5dBwBZfx9HGyE=",target:"_blank",rel:"noopener noreferrer",className:"tw-rounded tw-px-4 tw-py-2 tw-text-sm tw-text-gray-700 hover:tw-bg-gray-100",children:"Onboarding Guide"}),t.jsx("a",{href:"/publish/g/YwY-AFZeGSZqfg8dKjdbDw8_RA0AJCUDPXE9XxxLNH0bFwAHFys7CzAjJDU=",target:"_blank",rel:"noopener noreferrer",className:"tw-rounded tw-px-4 tw-py-2 tw-text-sm tw-text-gray-700 hover:tw-bg-gray-100",children:"FAQs"})]});return t.jsx(n,{content:r,placement:"left",interactive:!0,trigger:"click",arrow:!0,children:t.jsx("button",{type:"button",className:`
+          tw-fixed tw-bottom-20 tw-right-6 tw-z-dropdown
+          tw-flex tw-size-12 tw-cursor-pointer
+          tw-select-none tw-items-center
+          tw-justify-center tw-rounded-full
+          tw-bg-blue-300 tw-text-blue-600
+          tw-shadow-lg tw-transition-all
+          tw-duration-200 hover:tw-scale-105
+          hover:tw-bg-blue-400 hover:tw-shadow-xl
+          ${e||""}
+        `,"aria-label":"View help resources",children:t.jsx(l,{className:"tw-size-6"})})})}o({rootElementId:"floating-worker-help-button-root",Component:s});
+//# sourceMappingURL=BQKVQCNY.js.map

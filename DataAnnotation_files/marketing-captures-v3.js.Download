@@ -1,0 +1,52 @@
+// v3
+(() => {
+  if (!location.search && !location.hash) {
+    return;
+  }
+
+  if (!window.fetch || !window.Promise) {
+    console.warn("Browser mc doesn't support required features.");
+    return;
+  }
+
+  let host = location.host;
+
+  if (host.startsWith('www.')) {
+    host = 'app.' + host.replace(/^www\./, '');
+  } else if (host.split('.').length === 2) {
+    host = 'app.' + host;
+  }
+
+  const cookie_url = `${location.protocol}//${host}/api/marketing/capture`;
+  const url = location.href;
+  const referrer_url = document.referrer;
+
+  const retryCall = (func, tries, error) => {
+    tries += 1;
+    if (tries < 5) {
+      setTimeout(() => func(tries), tries * 300);
+    } else {
+      console.warn("Browser mc error: ", error);
+    }
+  };
+
+  const createCookie = (tries = 0) => {
+    fetch(cookie_url, {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      credentials: 'include',
+      body: JSON.stringify({ url, referrer_url }),
+    })
+    .then((response) => {
+      if (!response.ok) {
+        retryCall(createCookie, tries, response);
+      }
+    })
+    .catch((error) => {
+      // Handle network errors and CORS
+      retryCall(createCookie, tries, error);
+    });
+  };
+
+  createCookie();
+})();
