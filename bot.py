@@ -2,6 +2,10 @@ import time
 import os
 import requests
 from playwright.sync_api import sync_playwright
+from dotenv import load_dotenv
+
+# .env Datei laden für lokale Ausführung
+load_dotenv()
 
 # Konfiguration
 LOGIN_URL = "https://app.dataannotation.tech/users/sign_in"
@@ -25,7 +29,7 @@ SUBMIT_SELECTOR = "input[type='submit']"
 MONITOR_SELECTOR = '[id="workers/WorkerProjectsTable-hybrid-root"]' 
 
 def run_bot():
-    last_content = None
+    last_projects = None
 
     while True:
         try:
@@ -40,12 +44,17 @@ def run_bot():
                     print("Starte Bot...")
                     perform_login(page)
 
+                    # Initial Nachricht
+                    if last_projects is None:
+                         if GREEN_API_INSTANCE_ID and GREEN_API_TOKEN and WHATSAPP_RECIPIENT:
+                             send_whatsapp_message(f"🤖 Bot gestartet!\nIch überwache jetzt die Seite für dich.\n\nLink: {TARGET_URL}")
+
                     while True:
                         try:
                             print(f"Prüfe Seite: {TARGET_URL}")
                             page.goto(TARGET_URL)
                             
-                            # Prüfen ob wir vielleicht ausgeloggt wurden (z.B. Redirect zur Login Seite)
+                            # Prüfen ob wir vielleicht ausgeloggt wurden
                             if "login" in page.url:
                                 print("Session abgelaufen, logge neu ein...")
                                 perform_login(page)
@@ -54,35 +63,63 @@ def run_bot():
                             # Warte bis das Element geladen ist
                             page.wait_for_selector(MONITOR_SELECTOR, timeout=5000)
                             
-                            # Inhalt des überwachten Elements holen
+                            # Inhalt analysieren (NUR Links/Projektnamen)
                             element = page.query_selector(MONITOR_SELECTOR)
-                            current_content = element.inner_text() if element else ""
+                            
+                            current_projects = {} # Name -> Typ
+                            if element:
+                                links = element.query_selector_all('a')
+                                for link in links:
+                                    text = link.inner_text().strip()
+                                    href = link.get_attribute('href') or ""
+                                    if text:
+                                        # Unterscheidung Projekt vs Qualifikation
+                                        # Heuristik: 'workers/qualifications' in URL oder implizit
+                                        if "qualification" in href:
+                                            p_type = "Qualifikation"
+                                        else:
+                                            p_type = "Projekt"
+                                        current_projects[text] = p_type
 
-                            if last_content is None:
-                                last_content = current_content
-                                print("Initialer Status gespeichert.")
-                                
-                                # Start-Nachricht senden
-                                if GREEN_API_INSTANCE_ID and GREEN_API_TOKEN and WHATSAPP_RECIPIENT:
-                                    send_whatsapp_message(f"🤖 Bot gestartet!\nIch überwache jetzt die Seite für dich.\n\nLink: {TARGET_URL}")
+                            current_project_names = set(current_projects.keys())
 
-                            elif current_content != last_content:
-                                print("⚠️ ÄNDERUNG ERKANNT! ⚠️")
-                                print(f"Neu: {current_content}")
+                            if last_projects is None:
+                                last_projects = current_project_names
+                                print(f"Initialer Status: {len(current_project_names)} Projekte gefunden.")
                                 
-                                # WhatsApp Nachricht via Green API
-                                if GREEN_API_INSTANCE_ID and GREEN_API_TOKEN and WHATSAPP_RECIPIENT:
-                                    send_whatsapp_message(f"🚨 DataAnnotation Änderung! 🚨\n\nLink: {TARGET_URL}\n\nNeuer Status:\n{current_content[:500]}")
-                                
-                                last_content = current_content
                             else:
-                                print("Keine Änderung.")
+                                # Vergleiche Sets
+                                new_items = current_project_names - last_projects
+                                gone_items = last_projects - current_project_names
+                                
+                                if new_items:
+                                    print("⚠️ NEUE PROJEKTE/QUALIFIKATIONEN! ⚠️")
+                                    
+                                    msg_lines = ["🚨 Neue Aufgaben verfügbar! 🚨\n"]
+                                    for item in new_items:
+                                        p_type = current_projects.get(item, "Aufgabe")
+                                        msg_lines.append(f"🆕 {p_type}: {item}")
+                                    
+                                    msg_lines.append(f"\nLink: {TARGET_URL}")
+                                    final_msg = "\n".join(msg_lines)
+                                    
+                                    if GREEN_API_INSTANCE_ID and GREEN_API_TOKEN and WHATSAPP_RECIPIENT:
+                                        send_whatsapp_message(final_msg)
+                                    
+                                    # State aktualisieren
+                                    last_projects = current_project_names
+
+                                elif gone_items:
+                                    print(f"Info: {len(gone_items)} Projekte sind verschwunden.")
+                                    # Still update state so we can detect if they come back!
+                                    last_projects = current_project_names
+                                else:
+                                    print("Keine relevanten Änderungen.")
 
                         except Exception as e:
                             print(f"Fehler beim Prüfen: {e}")
                             # Bei Fehlern innerhalb der Loop nicht sofort abbrechen, sondern retryen
-                            # Außer es ist ein Browser-Crash, den fängt die äußere Loop
-
+                        
                         time.sleep(CHECK_INTERVAL)
 
                 except KeyboardInterrupt:
