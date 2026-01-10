@@ -34,8 +34,15 @@ def run_bot():
     while True:
         try:
             with sync_playwright() as p:
-                # headless=True bedeutet, der Browser läuft im Hintergrund ohne Fenster.
-                browser = p.chromium.launch(headless=True) 
+                # Browser mit Argumenten starten um Speicher/Cache zu sparen
+                browser = p.chromium.launch(
+                    headless=True, 
+                    args=[
+                        "--disable-dev-shm-usage", 
+                        "--no-sandbox", 
+                        "--disk-cache-size=0" 
+                    ]
+                )
                 context = browser.new_context()
                 page = context.new_page()
 
@@ -49,7 +56,12 @@ def run_bot():
                          if GREEN_API_INSTANCE_ID and GREEN_API_TOKEN and WHATSAPP_RECIPIENT:
                              send_whatsapp_message(f"🤖 Bot gestartet!\nIch überwache jetzt die Seite für dich.\n\nLink: {TARGET_URL}")
 
+                    check_count = 0
                     while True:
+                        if check_count >= 60:
+                             print("♻️ Browser-Neustart zur Bereinigung...")
+                             break
+
                         try:
                             print(f"Prüfe Seite: {TARGET_URL}")
                             page.goto(TARGET_URL)
@@ -120,6 +132,7 @@ def run_bot():
                             print(f"Fehler beim Prüfen: {e}")
                             # Bei Fehlern innerhalb der Loop nicht sofort abbrechen, sondern retryen
                         
+                        check_count += 1
                         time.sleep(CHECK_INTERVAL)
 
                 except KeyboardInterrupt:
